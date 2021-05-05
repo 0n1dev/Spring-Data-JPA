@@ -313,7 +313,7 @@ public class Address {
     @Embedded
     private Address address;
 ```
-
+ 
 **같은 타입이 존재할 때 Override**
 
 ```java
@@ -414,5 +414,146 @@ account.getStudies().add(study);
 study.setOwner(account); // 필수 (주인)
 ```
 
+</details>
+
+# JPA 프로그래밍 - Cascade 옵션
+---
+
+<details>
+    <summary>펼치기</summary>
+
+> 엔티티의 상태 변화를 전화 시키는 옵션
+
+- Transient
+    - JPA가 모르는 상태
+- Persistent
+    - JPA가 관리중인 상태
+        - 1차 캐시
+        - Dirty Checking
+        - Write Behind
+- Detached
+    - JPA가 더 이상 관리하지 않는 상태
+- Removed
+    - JPA가 관리하긴 하지만 삭제하기로 한 상태
+
+### POST 예제
+
+```java
+@Entity
+public class Post {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String title;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST)
+    private Set<Comment> comments = new HashSet<>();
+
+    public void addComment(Comment comment) {
+        this.getComments().add(comment);
+        comment.setPost(this);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
+    }
+}
+```
+
+### Comment 예제
+
+```java
+@Entity
+public class Comment {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String comment;
+
+    @ManyToOne
+    private Post post;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Post getPost() {
+        return post;
+    }
+
+    public void setPost(Post post) {
+        this.post = post;
+    }
+}
+```
+
+### Runner 예제
+
+```java
+@Component
+@Transactional
+public class JpaRunner implements ApplicationRunner {
+
+    @PersistenceContext
+    EntityManager entityManager; // 핵심
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        Post post = new Post();
+        post.setTitle("아아아아아아아");
+
+        Comment comment = new Comment();
+        comment.setComment("언제 다하냐");
+        post.addComment(comment);
+
+        Comment comment2 = new Comment();
+        comment2.setComment("내말이.....");
+        post.addComment(comment2);
+
+        Comment comment3 = new Comment();
+        comment3.setComment("여긴 지옥이다!!");
+        post.addComment(comment3);
+
+        Session session = entityManager.unwrap(Session.class);
+        session.save(post);
+    }
+}
+```
 
 </details>
