@@ -270,3 +270,58 @@ public class Account {
 
 -> application.yml에 jpa 설정을 `show-sql: true` 이거로 주면 쿼리문이 보임
 </details>
+
+# JPA 프로그래밍 - Value 타입 맵핑
+---
+
+<details>
+    <summary>펼치기</summary>
+
+### 엔티티 타입과 Value 타입 구분
+
+- 식별자가 있어야 하는가 (엔티티)
+- 독립적으로 존재해야 하는가 (엔티티)
+- 종속적이면 Value 타입
+
+### Value 타입 종류
+
+- 기본 타입(String, Date, Boolean, ...)
+- Composite Value 타입
+- Collection Value 타입
+    - 기본 타입의 콜렉션
+    - 컴포짓 타입의 콜렉션
+
+### Composite Value 기본 예제
+
+```java
+@Embeddable
+public class Address {
+
+    private String street;
+
+    private String city;
+
+    private String state;
+
+    private String zipCode;
+}
+```
+
+**Entity에 멤버 변수 추가**
+
+```java
+    @Embedded
+    private Address address;
+```
+
+**같은 타입이 존재할 때 Override**
+
+```java
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "street", column = @Column(name = "home.street"))
+    })
+    private Address address;
+```
+
+</details>
