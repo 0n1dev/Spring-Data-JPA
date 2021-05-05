@@ -325,3 +325,94 @@ public class Address {
 ```
 
 </details>
+
+# JPA 프로그래밍 - 1대다 맵핑
+---
+
+<details>
+    <summary>펼치기</summary>
+
+- 관계에는 항상 두 엔티티가 존재
+    - 둘 중 하나는 그 관계의 주인(Owning)
+    - 다른쪽은 종속(non-owning)
+    - 해당 관계의 반대쪽 레퍼런스를 가지고 있는 쪽이 주인
+- 단뱡향에서의 관계의 주인은 명확
+
+
+### Study Entity 생성 (단방향 N:1)
+
+```java
+@Entity
+public class Study {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    private String name;
+
+    @ManyToOne // 단방향 N:1 관계
+    private Account owner;
+
+    public Account getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Account owner) {
+        this.owner = owner;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+```
+
+### Account Entity 수정 (단방향 1:N)
+
+-> Study Entity의 관계관련 멤버 변수 지움
+
+```java
+    @OneToMany // 단뱡향 1:N
+    private Set<Study> studies = new HashSet<>();
+```
+
+### 양방향
+
+- ManyToOne을 가지고 있는쪽이 주인
+- OneToMany(mappedBy)
+- 주인한테 관계를 설정해야 DB에 반영
+
+-> Study와 Account 관계관련 멤버 변수 입력
+
+```java
+    @ManyToOne
+    private Account owner;
+```
+
+```java
+    @OneToMany(mappedBy = "owner")
+    private Set<Study> studies = new HashSet<>();
+```
+
+양방향일때는 양쪽다 관계에 대해 넣어줘야함(주인은 필수 종속된 쪽은 옵셔널)
+
+```java
+account.getStudies().add(study);
+study.setOwner(account); // 필수 (주인)
+```
+
+
+</details>
