@@ -13,9 +13,6 @@
 <details>
     <summary>펼치기</summary>
 
-# 관계형 데이터베이스와 자바
----
-
 > 기본키나 외래키를 이용하여 데이터들을 식별하고 무결성을 관리
 
 ## 패러다임 불일치
@@ -76,3 +73,110 @@
 # JPA 프로젝트 세팅
 ---
 
+<details>
+    <summary>펼치기</summary>
+
+- 프로젝트 환경
+    - IntelliJ
+    - JAVA 11
+    - Gradle
+    - Mysql
+    - Docker
+
+### 도커 세팅
+
+> docker run -d -p 3316:3306 -e MYSQL_ROOT_PASSWORD=`<PASSWORD>` --name mysql mysql:latest --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+### 의존성 추가
+
+> implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+> implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.24'
+
+-> 의존성 추가하면 하이버네이트도 추가됨
+
+### application.yml
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3316/springdata
+    username: root
+    password: 패스워드
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create # 개발할때만 사용하는게 좋음
+```
+
+### Account Entity
+
+```java
+package kr.spring.jpa;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity // 해당 클래스가 데이터베이스에 맵핑 된다고 알려주는 어노테이션
+public class Account {
+
+    @Id // 주 키에 맵핑
+    @GeneratedValue // 값을 자동으로 생성
+    private Long id;
+
+    private String username;
+
+    private String password;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+```
+
+### JpaRunner
+
+```java
+@Component
+@Transactional
+public class JpaRunner implements ApplicationRunner {
+
+    @PersistenceContext
+    EntityManager entityManager; // 영속성 컨텍스트에 접근 및 관리 가능한 인터페이스 제공
+
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+        Account account = new Account();
+        account.setUsername("TEST");
+        account.setPassword("PASSWORD");
+
+        Session session = entityManager.unwrap(Session.class);
+        session.save(account);
+
+        // entityManager.persist(account); // 엔티티를 영속성 컨텍스트에 저장
+    }
+}
+```
+
+<details>
