@@ -557,3 +557,42 @@ public class JpaRunner implements ApplicationRunner {
 ```
 
 </details>
+
+# JPA 프로그래밍 - Query
+---
+
+<details>
+    <summary>펼치기</summary>
+
+### JPQL (HQL)
+
+> JPA 또는 하이버네이트가 해당 쿼리를 SQL로 변환해서 실행
+
+```java
+        TypedQuery<Post> query = entityManager.createQuery("SELECT p FROM Post as p", Post.class);
+        List<Post> posts = query.getResultList();
+        posts.forEach(System.out::println);
+```
+
+### Criteria
+
+> 타입 세이프
+
+```java
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Post> query = builder.createQuery(Post.class);
+        Root<Post> root = query.from(Post.class);
+        query.select(root);
+
+        List<Post> posts = entityManager.createQuery(query).getResultList();
+        posts.forEach(System.out::println);
+```
+
+### Native Query
+
+```java
+        List<Post> posts = entityManager.createNativeQuery("SELECT * FROM Post", Post.class).getResultList();
+        posts.forEach(System.out::println);
+```
+
+</details>
